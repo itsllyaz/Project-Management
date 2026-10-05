@@ -6,8 +6,12 @@ services:
       - "5000:5000"
     env_file:
       - ./backend/.env
+    # 1. This waits for Postgres to be fully ready before firing up the backend
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    # 2. Automatically syncs schema to DB and boots your app
+    command: sh -c "npx prisma db push && npm run dev"
 
   frontend:
     build: ./frontend
@@ -17,13 +21,21 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: myprojectuser
-      POSTGRES_PASSWORD: strongpassword
+      POSTGRES_USER: llyaz
+      POSTGRES_PASSWORD: "1336"
       POSTGRES_DB: internship_project
+      
+      
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    # 3. Tells Docker how to check if Postgres is ready to receive Prisma connections
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myprojectuser -d internship_project"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pgdata:

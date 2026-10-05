@@ -1,5 +1,6 @@
 # Build stage
-FROM node:20-alpine as build   # use Node 20 to match vite/react-router requirements
+# use Node 20 to match vite/react-router requirements
+FROM node:20-alpine as build  
 WORKDIR /app
 
 # Copy only package.json + lock first
@@ -15,5 +16,5 @@ RUN npm run build
 # Serve with nginx
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 3000
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
